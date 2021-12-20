@@ -232,6 +232,12 @@ begin
   end;
 
   FError := FDuplicate.AcquireNextFrame(0, FrameInfo, Resource);
+  if FError = DXGI_ERROR_ACCESS_LOST then
+  begin
+    { Direct3D Desktop Duplication: How to Recover From Changing Screen Resolution?
+      https://stackoverflow.com/questions/31211282/direct3d-desktop-duplication-how-to-recover-from-changing-screen-resolution }
+    O1.DuplicateOutput(FDevice, FDuplicate); { retry }
+  end;
   if Failed(FError) then
     Exit;
 
