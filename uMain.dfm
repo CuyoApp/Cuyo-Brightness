@@ -44,7 +44,7 @@ object frmMain: TfrmMain
       ParentShowHint = False
       ShowHint = True
       ShowSelRange = False
-      TabOrder = 0
+      TabOrder = 2
       OnChange = tbOpacityChange
       OnKeyPress = tbOpacityKeyPress
     end
@@ -54,7 +54,7 @@ object frmMain: TfrmMain
       Width = 97
       Height = 17
       Caption = 'Enable'
-      TabOrder = 1
+      TabOrder = 0
       OnClick = chkEnabledClick
     end
     object tbOffset: TTrackBar
@@ -68,9 +68,18 @@ object frmMain: TfrmMain
       ParentShowHint = False
       ShowHint = True
       ShowSelRange = False
-      TabOrder = 2
+      TabOrder = 3
       OnChange = tbOffsetChange
       OnKeyPress = tbOpacityKeyPress
+    end
+    object chkPause: TCheckBox
+      Left = 81
+      Top = 20
+      Width = 65
+      Height = 17
+      Caption = 'Pause'
+      TabOrder = 1
+      OnClick = chkPauseClick
     end
   end
   object btnShowForms: TButton
@@ -108,6 +117,10 @@ object frmMain: TfrmMain
     object mnuEnabled: TMenuItem
       Caption = '&Brightness Target 50%'
       OnClick = mnuEnabledClick
+    end
+    object mnuPause: TMenuItem
+      Caption = '&Pause'
+      OnClick = mnuPauseClick
     end
     object mnuAutoRun: TMenuItem
       AutoCheck = True

@@ -24,6 +24,8 @@ type
     mnuAutoRun: TMenuItem;
     btnShowForms: TButton;
     tbOffset: TTrackBar;
+    chkPause: TCheckBox;
+    mnuPause: TMenuItem;
     procedure ApplicationEvents1Minimize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -38,6 +40,8 @@ type
     procedure btnShowFormsClick(Sender: TObject);
     procedure tbOpacityKeyPress(Sender: TObject; var Key: Char);
     procedure tbOffsetChange(Sender: TObject);
+    procedure chkPauseClick(Sender: TObject);
+    procedure mnuPauseClick(Sender: TObject);
   private
     FDisplayChanging: Boolean;
     procedure WMDisplayChange(var Message: TWMDisplayChange); message WM_DISPLAYCHANGE;
@@ -53,6 +57,7 @@ type
     { Private declarations }
     Ini: TIniFile;
     FBrightnessEnabled: Boolean;
+    FPaused: Boolean;
     FOpacity: Integer;
     FMinOffset: Integer;
     FHintAlready: Boolean;
@@ -68,8 +73,11 @@ type
 
     function getBEnabled: Boolean;
     procedure setBEnabled(const Value: Boolean);
+    function getPaused: Boolean;
+    procedure setPaused(const Value: Boolean);
 
     property BrightnessEnabled: Boolean read getBEnabled write setBEnabled;
+    property Paused: Boolean read getPaused write setPaused;
   public
     { Public declarations }
   end;
@@ -192,6 +200,7 @@ begin
   TrayIcon1.Visible := True; // always showing now
   SetOpacity(50);
   SetOffset(0);
+  SetPaused(False);
 
   // load settings
   Ini := TIniFile.Create( ChangeFileExt( Application.ExeName, '.INI' ) );
@@ -243,6 +252,11 @@ begin
   result := FBrightnessEnabled;
 end;
 
+function TfrmMain.getPaused: Boolean;
+begin
+  result := FPaused;
+end;
+
 procedure TfrmMain.SetHintAlready;
 begin
   FHintAlready := True;
@@ -279,6 +293,22 @@ begin
   if tbOpacity.Position <> FOpacity then
     tbOpacity.Position := FOpacity;
   FCaptureList.Update(FBrightnessEnabled, FOpacity, FMinOffset);
+end;
+
+procedure TfrmMain.setPaused(const Value: Boolean);
+var
+  Changes: Boolean;
+begin
+  Changes := FPaused <> Value;
+  FPaused := Value;
+  mnuPause.Checked := FPaused;
+  chkPause.Checked := FPaused;
+  if Changes then
+  begin
+    FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset, FPaused);
+  end;
+  chkPause.Enabled := FBrightnessEnabled;
+  mnuPause.Visible := FBrightnessEnabled;
 end;
 
 procedure TfrmMain.ShowMainAtCenter(ShowIt: Boolean);
@@ -320,6 +350,11 @@ end;
 procedure TfrmMain.chkEnabledClick(Sender: TObject);
 begin
   BrightnessEnabled := chkEnabled.Checked;
+end;
+
+procedure TfrmMain.chkPauseClick(Sender: TObject);
+begin
+  Paused := chkPause.Checked;
 end;
 
 procedure TfrmMain.btnShowFormsClick(Sender: TObject);
@@ -400,6 +435,11 @@ begin
   Close;
 end;
 
+procedure TfrmMain.mnuPauseClick(Sender: TObject);
+begin
+  Paused := not Paused;
+end;
+
 procedure TfrmMain.mnuShowClick(Sender: TObject);
 begin
   { Hide the tray icon and show the window,
@@ -426,8 +466,14 @@ begin
   chkEnabled.Checked := FBrightnessEnabled;
   if Changes then
   begin
-    FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset);
+    if FBrightnessEnabled then
+    begin
+      chkPause.Checked := False;
+    end;
+    FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset, FPaused);
   end;
+  chkPause.Enabled := FBrightnessEnabled;
+  mnuPause.Visible := FBrightnessEnabled;
 end;
 
 procedure TfrmMain.TrayIcon1DblClick(Sender: TObject);
@@ -468,7 +514,7 @@ begin
   { lets put detected Adaptors' Screens' to list }
   FCaptureList.CreateCaptures(OnCheckIfNeedRecapture, FScreenList);
   FIsNeedRecapture := False;
-  FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset);
+  FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset, FPaused);
 end;
 
 procedure TfrmMain.recreateScreenList;

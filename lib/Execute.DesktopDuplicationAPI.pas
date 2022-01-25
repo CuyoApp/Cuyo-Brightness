@@ -75,9 +75,13 @@ type
     { screen average brightness calculation's offset }
     function MinOffsetGet: Integer;
     procedure MinOffsetSet(const Value: Integer);
+    { pause the auto brightness }
+    function PausedGet: Boolean;
+    procedure PausedSet(const Value: Boolean);
   protected
     FOpacity: Integer;
     FMinOffset: Integer;
+    FPaused: Boolean;
     FAverageBrightness: Integer;
     FOnCheckIfNeedRecapture: TOnCheckIfNeedRecapture;
     FCapture: TCaptureThread;
@@ -104,6 +108,7 @@ type
     property Bitmap: TBitmap read FBitmap;
     property Opacity: Integer read OpacityGet write OpacitySet;
     property MinOffset: Integer read MinOffsetGet write MinOffsetSet;
+    property Paused: Boolean read PausedGet write PausedSet;
   end;
 
 implementation
@@ -130,6 +135,7 @@ begin
   FBitmap := TBitmap.Create;
   FAverageBrightness := 50;
   FMinOffset := 0;
+  FPaused := False;
 
   FOnCheckIfNeedRecapture := OnCheckIfNeedRecapture;
 
@@ -342,6 +348,16 @@ begin
   Result := Trunc(totalBrightness / (bmp.Width * bmp.Height));
 end;
 
+function TDesktopDuplicationWrapper.PausedGet: Boolean;
+begin
+  Result := FPaused;
+end;
+
+procedure TDesktopDuplicationWrapper.PausedSet(const Value: Boolean);
+begin
+  FPaused := Value;
+end;
+
 { calculate the average - apply brightness target and offset }
 procedure TDesktopDuplicationWrapper.Process;
 var
@@ -421,16 +437,16 @@ procedure TCaptureThread.Execute;
 begin
   while (not Terminated) do
   begin
-    FWaitSignal.WaitFor(500);
+    FWaitSignal.WaitFor(1000); // Interval
     FWaitSignal.ResetEvent;
     if Terminated then
       Exit;
-    if FPause then
+    if FPause or FCapture.Paused then
       continue;
     Synchronize(CheckNeedRecapture);
     if Terminated then
       Exit;
-    if FPause then
+    if FPause or FCapture.Paused then
       continue;
     if FNeedRecapture then
       Exit; { end thread }
@@ -453,7 +469,8 @@ end;
 procedure TCaptureThread.Pause;
 begin
   FPause := True;
-  FCapture.ResetBrightness;
+  if not FCapture.Paused then
+    FCapture.ResetBrightness;
 end;
 
 procedure TCaptureThread.Start;

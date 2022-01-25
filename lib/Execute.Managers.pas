@@ -20,7 +20,7 @@ type
    destructor Destroy; override;
 
    function CreateCaptures(OnCheckIfNeedRecapture: TOnCheckIfNeedRecapture; ScreenList: TScreenList): Boolean;
-   procedure Trigger(Enabled: Boolean; Opacity: Integer; MinOffset: Integer);
+   procedure Trigger(Enabled: Boolean; Opacity: Integer; MinOffset: Integer; Paused: Boolean);
    procedure Update(Enabled: Boolean; Opacity: Integer; MinOffset: Integer);
    procedure Clear; reintroduce;
    procedure KillThreads;
@@ -75,7 +75,7 @@ begin
   Clear;
 end;
 
-procedure TExecuteList.Trigger(Enabled: Boolean; Opacity: Integer; MinOffset: Integer);
+procedure TExecuteList.Trigger(Enabled: Boolean; Opacity: Integer; MinOffset: Integer; Paused: Boolean);
 var
   Capture: TDesktopDuplicationWrapper;
   I: Integer;
@@ -87,6 +87,7 @@ begin
     begin
       Capture.Opacity := Opacity;
       Capture.MinOffset := MinOffset;
+      Capture.Paused := Paused;
       Capture.Thread.Start;
     end else
     begin
