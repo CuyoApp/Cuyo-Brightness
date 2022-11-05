@@ -82,6 +82,7 @@ type
     FOpacity: Integer;
     FMinOffset: Integer;
     FPaused: Boolean;
+    FRecaptured: Boolean;
     FAverageBrightness: Integer;
     FOnCheckIfNeedRecapture: TOnCheckIfNeedRecapture;
     FCapture: TCaptureThread;
@@ -109,6 +110,7 @@ type
     property Opacity: Integer read OpacityGet write OpacitySet;
     property MinOffset: Integer read MinOffsetGet write MinOffsetSet;
     property Paused: Boolean read PausedGet write PausedSet;
+    property Recaptured: Boolean read FRecaptured write FRecaptured;
   end;
 
 implementation
@@ -396,6 +398,8 @@ begin
       // above 128 = brighter { <-- not doing this part}
       // below 128 = darker
 
+      { screens changed, do once again even in paused mode }
+      FRecaptured := False;
     end else
     begin
       { no changes... or sometimes API error, skip! }
@@ -441,12 +445,12 @@ begin
     FWaitSignal.ResetEvent;
     if Terminated then
       Exit;
-    if FPause or FCapture.Paused then
+    if not FCapture.FRecaptured and (FPause or FCapture.Paused) then
       continue;
     Synchronize(CheckNeedRecapture);
     if Terminated then
       Exit;
-    if FPause or FCapture.Paused then
+    if not FCapture.FRecaptured and (FPause or FCapture.Paused) then
       continue;
     if FNeedRecapture then
       Exit; { end thread }

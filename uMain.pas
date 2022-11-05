@@ -514,7 +514,7 @@ begin
   { lets put detected Adaptors' Screens' to list }
   FCaptureList.CreateCaptures(OnCheckIfNeedRecapture, FScreenList);
   FIsNeedRecapture := False;
-  FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset, FPaused);
+  FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset, FPaused, TRUE);
 end;
 
 procedure TfrmMain.recreateScreenList;
