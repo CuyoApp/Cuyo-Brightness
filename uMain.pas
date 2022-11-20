@@ -46,8 +46,9 @@ type
     FDisplayChanging: Boolean;
     procedure WMDisplayChange(var Message: TWMDisplayChange); message WM_DISPLAYCHANGE;
     function isSystemAlive: Boolean;
+    procedure CheckDisplayChanged;
   private
-    FIsNeedRecapture: Boolean;
+    FIsNeedRecapture: Boolean; // TRUE = end Thread capturing
     FCaptureList: TExecuteList;
     FScreenList: TScreenList;
     procedure recreateScreenList;
@@ -419,6 +420,20 @@ begin
   end;
 end;
 
+procedure TfrmMain.CheckDisplayChanged;
+begin
+  if FDisplayChanging then
+    Exit;
+  FDisplayChanging := True;
+  try
+    FIsNeedRecapture := True;
+    FCaptureList.KillThreads;
+    recreateCaptures;
+  finally
+    FDisplayChanging := False;
+  end;
+end;
+
 procedure TfrmMain.mnuAutoRunClick(Sender: TObject);
 begin
   SetAutoStart(ParamStr(0), 'Cuyo Brightness', mnuAutoRun.Checked);
@@ -483,18 +498,9 @@ end;
 
 procedure TfrmMain.WMDisplayChange(var Message: TWMDisplayChange);
 begin
-  if FDisplayChanging then
-    Exit;
-  FDisplayChanging := True;
-  try
   //  ShowMessageFmt('The screen resolution has changed to %d×%d×%d.',
   //    [Message.Width, Message.Height, Message.BitsPerPixel]);
-    FIsNeedRecapture := True;
-    FCaptureList.KillThreads;
-    recreateCaptures;
-  finally
-    FDisplayChanging := False;
-  end;
+  CheckDisplayChanged;
 end;
 
 function TfrmMain.isSystemAlive: Boolean;
@@ -515,6 +521,19 @@ begin
   FCaptureList.CreateCaptures(OnCheckIfNeedRecapture, FScreenList);
   FIsNeedRecapture := False;
   FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset, FPaused, TRUE);
+  if FPaused then
+  begin
+    TThread.ForceQueue(nil,
+      procedure
+      begin
+        Paused := False;
+      end);
+    TThread.ForceQueue(nil,
+      procedure
+      begin
+        Paused := True;
+      end);
+  end;
 end;
 
 procedure TfrmMain.recreateScreenList;

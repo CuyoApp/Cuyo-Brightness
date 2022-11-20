@@ -88,8 +88,10 @@ type
     FCapture: TCaptureThread;
     FBitmap: TBitmap;
     FisError: Boolean;
+    isSleeping: Boolean;
 
     function CheckIfRecaptureNeeded(Capture: TDesktopDuplicationWrapper): Boolean;
+    function CanProcess: Boolean;
     procedure Process;
     procedure ResetBrightness;
   public
@@ -360,14 +362,31 @@ begin
   FPaused := Value;
 end;
 
+function TDesktopDuplicationWrapper.CanProcess: Boolean;
+var
+  pt: TPoint;
+begin
+  { use this to detect if in sleeping mode }
+  Result := GetCursorPos(pt);
+  if Result and isSleeping then
+  begin
+    isSleeping := False;
+    { we detect resume our self }
+    FRecaptured := True;
+  end
+  else
+  if (not Result) and (not isSleeping) then
+  begin
+    isSleeping := True;
+  end;
+end;
+
 { calculate the average - apply brightness target and offset }
 procedure TDesktopDuplicationWrapper.Process;
 var
-  pt: TPoint;
   avg, offset: Integer;
 begin
-  { use this to detect if in sleeping mode }
-  if not GetCursorPos(pt) then Exit;
+  if not CanProcess then Exit;
 
   try
     if not FisError and Self.GetFrame then
@@ -445,12 +464,12 @@ begin
     FWaitSignal.ResetEvent;
     if Terminated then
       Exit;
-    if not FCapture.FRecaptured and (FPause or FCapture.Paused) then
+    if not FCapture.CanProcess and not FCapture.FRecaptured and (FPause or FCapture.Paused) then
       continue;
     Synchronize(CheckNeedRecapture);
     if Terminated then
       Exit;
-    if not FCapture.FRecaptured and (FPause or FCapture.Paused) then
+    if not FCapture.CanProcess and not FCapture.FRecaptured and (FPause or FCapture.Paused) then
       continue;
     if FNeedRecapture then
       Exit; { end thread }

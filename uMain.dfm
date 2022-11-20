@@ -15,7 +15,6 @@ object frmMain: TfrmMain
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 15
   object gbOpacity: TGroupBox
     AlignWithMargins = True

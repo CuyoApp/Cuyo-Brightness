@@ -205,7 +205,8 @@ end;
 
 destructor TScreenInfo.Destroy;
 begin
-  SetDisplayBrightness(DC, 128); { restore brightness }
+  { no need restore }
+  //SetDisplayBrightness(DC, 128); { restore brightness }
   ReleaseDC(0, DC);
   inherited;
 end;
