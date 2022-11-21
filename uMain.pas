@@ -216,6 +216,7 @@ begin
       SetOpacity(Ini.ReadInteger('Form', 'BrightNessTarget', FOpacity));
       SetOffset(Ini.ReadInteger('Form', 'BrightNessTargetMinOffset', FMinOffset));
       setBEnabled(Ini.ReadBool('Form', 'BrightnessEnabled', FBrightnessEnabled));
+      setPaused(Ini.ReadBool('Form', 'Paused', FPaused));
       FHintAlready := Ini.ReadBool('Form', 'HintAlready', False);
       Left := Ini.ReadInteger('Form', 'Left', 0);
     end else
@@ -239,6 +240,7 @@ begin
     Ini.WriteInteger('Form', 'BrightNessTarget', FOpacity);
     Ini.WriteInteger('Form', 'BrightNessTargetMinOffset', FMinOffset);
     Ini.WriteBool('Form', 'BrightnessEnabled', FBrightnessEnabled);
+    Ini.WriteBool('Form', 'Paused', FPaused);
   finally
     Ini.Free;
   end;
