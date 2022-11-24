@@ -464,12 +464,12 @@ begin
     FWaitSignal.ResetEvent;
     if Terminated then
       Exit;
-    if not FCapture.CanProcess and not FCapture.FRecaptured and (FPause or FCapture.Paused) then
+    if not FCapture.CanProcess or (not FCapture.FRecaptured and (FPause or FCapture.Paused)) then
       continue;
     Synchronize(CheckNeedRecapture);
     if Terminated then
       Exit;
-    if not FCapture.CanProcess and not FCapture.FRecaptured and (FPause or FCapture.Paused) then
+    if not FCapture.CanProcess or (not FCapture.FRecaptured and (FPause or FCapture.Paused)) then
       continue;
     if FNeedRecapture then
       Exit; { end thread }
