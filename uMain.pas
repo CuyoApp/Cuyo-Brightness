@@ -308,7 +308,7 @@ begin
   chkPause.Checked := FPaused;
   if Changes then
   begin
-    FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset, FPaused);
+    FCaptureList.Trigger(FBrightnessEnabled, FOpacity, FMinOffset, FPaused, FPaused);
   end;
   chkPause.Enabled := FBrightnessEnabled;
   mnuPause.Visible := FBrightnessEnabled;
